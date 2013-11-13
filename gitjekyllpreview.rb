@@ -48,5 +48,31 @@ module GitJekyllPreview
   end
 
 
+  def GitJekyllPreview.isHTML(path)
 
+    path_segments = path.split(".", -1)
+    
+    if path_segments.last.downcase == "html"
+      return true
+    end
+
+    return false
+  end
+
+
+  def GitJekyllPreview.injectJavascript(html)
+
+    js = File.read("rewrite_urls.js")
+    new_html = ""
+
+    html.split("\n", -1).each{ | line |
+
+      if (line.downcase.index("</html>") != nil)
+        new_html += "<script>"+js+"</script> \n"
+      end
+   
+      new_html += line +"\n"
+    }
+    new_html
+  end
 end
