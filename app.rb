@@ -48,6 +48,19 @@ get '/:repo/:ref/?*' do
     GitJekyllPreview.build(params[:repo], params[:ref])
   end
 
+
+  if File.directory?("#{path}/_site/#{file_path}")
+
+    #if the path is a directory, we should return the index
+
+    if file_path[file_path.length] != "/"
+      file_path += "/"
+    end
+
+    file_path += "index.html"
+
+  end
+
   puts "#{params[:repo]} #{params[:ref]} #{request.path} #{file_path}"
   
   send_file "#{path}/_site/#{file_path}"
