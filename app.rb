@@ -41,10 +41,6 @@ get '/:repo/:ref/?*' do
 
   end
 
-  puts "FILE PATH"
-  puts file_path
-
-
   if GitJekyllPreview.isHTML(file_path)
 
     html = File.read("#{path}/_site/#{file_path}")
