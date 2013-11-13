@@ -12,7 +12,10 @@ get '/:repo/:ref/?*' do
 
   req_path = request.path
   
-  if(request.referrer)
+  puts "RETURN"
+  puts params[:return]
+
+  if(request.referrer and params[:return] != "true")
     uri = URI(request.referrer)
 
     if uri.host == request.host
@@ -28,8 +31,11 @@ get '/:repo/:ref/?*' do
       if(path_segments.length > 3)
 
 
-        params[:repo] = path_segments[1]
-        params[:ref] = path_segments[2]
+        repo = path_segments[1]
+        ref = path_segments[2]
+
+        redirect "/"+repo+"/"+ref+req_path+"?return=true", 302
+
       end
     end
   end
