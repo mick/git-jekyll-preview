@@ -3,57 +3,31 @@ require './gitjekyllpreview'
 require 'uri'
 
  
-get '/' do
-
-  "something"
-end
-
-get '/:repo/:ref/?*' do
+def checkReferer
 
   req_path = request.path
-  
-  puts "RETURN"
-  puts params[:return]
 
-  if(request.referrer and params[:return] != "true")
+  if(request.referrer)
     uri = URI(request.referrer)
 
     if uri.host == request.host
       path_segments = uri.path.split("/", -1)
 
-        puts "PATH SEGMENTS>"
-        puts path_segments[0]
-        puts path_segments[1]
-        puts path_segments[2]
-
-        puts "<PATH SEGMENTS"
-
       if(path_segments.length > 3)
-
 
         repo = path_segments[1]
         ref = path_segments[2]
 
-        redirect "/"+repo+"/"+ref+req_path+"?return=true", 302
-
+        if(req_path.index("/"+repo+"/"+ref) == nil)
+          redirect "/"+repo+"/"+ref+req_path, 302
+        end
       end
     end
   end
-
-  file_path = req_path.sub("/#{params[:repo]}/#{params[:ref]}/", "")
-  path = GitJekyllPreview.make_path(params[:repo], params[:ref], false)
+end
 
 
-
-  #http://localhost:9292/beyondtransparency/HEAD/index.html
-
-  if !File.directory?(path)
-
-    puts "Not found... checkout and build"
-    GitJekyllPreview.checkout(params[:repo], params[:ref])
-    GitJekyllPreview.build(params[:repo], params[:ref])
-  end
-
+def serveFile(path, file_path)
 
   if File.directory?("#{path}/_site/#{file_path}")
 
@@ -67,11 +41,44 @@ get '/:repo/:ref/?*' do
 
   end
 
-  puts "#{params[:repo]} #{params[:ref]} #{request.path} #{file_path}"
-  
   send_file "#{path}/_site/#{file_path}"
 
+end
+
+def getRepoFromPath(path)
+
+  path_segments = path.split("/", -1)
+
+  {:repo => path_segments[1],
+    :ref => path_segments[2]}
+end
+
+get '/' do
+  "something"
+end
+
+
+get '/:repo/:ref/?*' do
+
+  req_path = request.path
+
+  file_path = req_path.sub("/#{params[:repo]}/#{params[:ref]}/", "")
+  path = GitJekyllPreview.make_path(params[:repo], params[:ref], false)
+
+  checkReferer
+
+  if !File.directory?(path)
+
+    puts "Not found... checkout and build"
+    GitJekyllPreview.checkout(params[:repo], params[:ref])
+    GitJekyllPreview.build(params[:repo], params[:ref])
+  end
+
+  serveFile(path, file_path)
 
 end
  
-
+get '*' do
+  checkReferer
+  serveFile(path, file_path)
+end
