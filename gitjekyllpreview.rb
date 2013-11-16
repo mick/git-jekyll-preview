@@ -1,5 +1,6 @@
 #require 'jekyll'
 require 'fileutils'
+require 'grit'
 
 
 
@@ -26,7 +27,6 @@ module GitJekyllPreview
 
     # checkout the specified ref
     path = make_path(repo, ref)
-    puts path
     system "cd repos/#{repo}; git --work-tree=../../#{path} checkout #{ref} -- ."
   end
 
@@ -34,13 +34,18 @@ module GitJekyllPreview
 
     # build the site.
     path = make_path(repo, ref)
-
     system "cd #{path}; jekyll build"
 
   end
 
+  def GitJekyllPreview.repoInfo(repo, ref)
+    repo = Grit::Repo.new("repos/#{repo}")
 
+    puts repo.commits(ref)
 
+    {:prev => repo.commits(ref)[1]}
+
+  end
 
   def injectBaseTag(html)
     #heh
