@@ -53,10 +53,22 @@ def getRepoFromPath(path)
     :ref => path_segments[2]}
 end
 
-get '/' do
-  "something"
-end
+get '/preview/*' do
 
+  path = request.path.sub("/preview", "")
+
+  repo = getRepoFromPath(path)
+
+  info = GitJekyllPreview.repoInfo(repo[:repo], repo[:ref])
+
+  
+  erb :preview, :locals => {
+    :repo => repo[:repo], 
+    :prevref => info[:prev], 
+    :nextref => "", 
+    :branches => [""], 
+    :url => path }
+end
 
 get '/:repo/:ref/?*' do
 
